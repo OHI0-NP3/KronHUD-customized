@@ -259,23 +259,33 @@ public class KeystrokeHud extends TextHudEntry {
             this.key = key;
             this.render = render;
         }
-
-        public void renderStroke(DrawContext context) {
-            if (key.isPressed() != wasPressed) {
-                start = Util.getMeasuringTimeMs();
-            }
-            Rectangle rect = bounds.offset(offset);
-            if (background.getValue()) {
-                fillRect(context, rect, getColor());
-            }
-            if (outline.getValue()) {
-                outlineRect(context, rect, getOutlineColor());
-            }
-            if ((Util.getMeasuringTimeMs() - start) / animTime >= 1) {
-                start = -1;
-            }
-            wasPressed = key.isPressed();
+        
+    public void renderStroke(DrawContext context) {
+        if (key.isPressed() != wasPressed) {
+            start = Util.getMeasuringTimeMs();
         }
+        Rectangle rect = bounds.offset(offset);
+        if (background.getValue()) {
+            fillRect(context, rect, getColor());
+        }
+
+        // Add the rainbow outline
+        if (outline.getValue()) {
+            int animTime = 1000; // Duration of the animation in milliseconds
+            float hue = ((Util.getMeasuringTimeMs() % animTime) / (float)animTime) * 360; // Calculate hue based on time
+            Color outlineColor = Color.getHSBColor(hue / 360f, 1f, 1f); // Convert HSB color to RGB
+
+            outlineRect(context, rect, outlineColor);
+        }
+
+        if ((Util.getMeasuringTimeMs() - start) / animTime >= 1) {
+            start = -1;
+        }
+        wasPressed = key.isPressed();
+    }
+
+        
+}
 
         private float getPercentPressed() {
             return start == -1 ? 1 : MathHelper.clamp((Util.getMeasuringTimeMs() - start) / animTime, 0, 1);
